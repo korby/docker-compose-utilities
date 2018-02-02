@@ -31,7 +31,7 @@ _dc_in_container ()
     cmd="$cmd "$i; 
   done
 
-  path=`echo "$cmd" | cut -d " " -f 6`
+  path=`expr "$cmd" : ".* \(/.*\)"`
   main_cmd=`echo "$cmd" | cut -d " " -f 1-4`
 
 
@@ -42,6 +42,7 @@ _dc_in_container ()
 		search=`expr "$path" : "\(/*.*/\)"`
   		keywords=`$main_cmd ls -1 $search | sed 's/.$//' | sed "s'^'$search'"` 
   fi
+echo "$path" >> /tmp/test.txt
 
   COMPREPLY=( $(compgen -W "$keywords" -- $cur ) )
 

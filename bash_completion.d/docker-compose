@@ -1,0 +1,51 @@
+_dc ()
+{
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+
+  if [[ ${#COMP_WORDS[@]} < 4 ]]; then
+  	_dc_containers_list
+  else
+  	_dc_in_container
+  fi
+  
+}
+_dc_containers_list()
+{
+  local cur keywords cmd main_cmd path
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  keywords=`cat docker-compose.yml | grep "^[a-z]" | sed "s/://"`
+  COMPREPLY=( $(compgen -W "$keywords" -- $cur ) )
+  return 0
+}
+_dc_in_container ()
+{
+  local cur keywords cmd main_cmd path
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  for i in ${COMP_WORDS[@]}; 
+  do 
+  	if [ "$i" == "dc" ]; then i="docker-compose"; fi
+    cmd="$cmd "$i; 
+  done
+
+  path=`echo "$cmd" | cut -d " " -f 6`
+  main_cmd=`echo "$cmd" | cut -d " " -f 1-4`
+
+
+  if [ "$path" == "/" ]; then
+		keywords=`$main_cmd ls -1 $path | sed 's/.$//' | awk '$0="/"$0'`
+
+	else
+		search=`expr "$path" : "\(/*.*/\)"`
+  		keywords=`$main_cmd ls -1 $search | sed 's/.$//' | sed "s'^'$search'"` 
+  fi
+
+  COMPREPLY=( $(compgen -W "$keywords" -- $cur ) )
+
+  return 0
+}
+complete -o nospace -F _dc docker-compose
+complete -o nospace -F _dc dc
